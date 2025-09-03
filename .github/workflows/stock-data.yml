@@ -34,7 +34,7 @@ jobs:
       run: python fetch_stock_data.py
       
     - name: 上传执行结果
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: stock-data-logs

@@ -74,13 +74,17 @@
 | 文件 | 描述 |
 |------|------|
 | `fetch_stock_data.py` | 主要的数据获取脚本 |
+| `app.py` | Streamlit Web 应用主文件 |
+| `run_app.py` | Streamlit 应用启动脚本 |
 | `.github/workflows/stock-data.yml` | GitHub Actions 工作流配置 |
 | `requirements.txt` | Python 依赖包列表 |
 | `supabase_setup.sql` | Supabase 数据库表结构创建脚本 |
+| `.streamlit/config.toml` | Streamlit 应用配置 |
 | `README.md` | 项目说明文档 |
 
-## 本地测试
+## 本地使用
 
+### 数据获取脚本
 ```bash
 # 安装依赖
 pip install -r requirements.txt
@@ -91,9 +95,28 @@ export SUPABASE_KEY="your-supabase-key"
 export THS_COOKIE="your-ths-cookie"
 export DINGTALK_WEBHOOK="your-dingtalk-webhook"  # 可选
 
-# 运行脚本
+# 运行数据获取脚本
 python fetch_stock_data.py
 ```
+
+### Streamlit Web 应用
+```bash
+# 1. 配置 Supabase 连接
+# 编辑 .streamlit/secrets.toml 文件，填入你的 Supabase 配置
+
+# 2. 启动 Web 应用
+python run_app.py
+# 或直接使用 streamlit 命令
+streamlit run app.py
+
+# 3. 打开浏览器访问 http://localhost:8501
+```
+
+### Web 应用功能
+- 📅 **日期选择**: 选择不同日期查看历史数据
+- 📊 **汇总统计**: 显示当天符合条件的股票数量、平均涨跌幅等
+- 📋 **数据表格**: 详细的股票信息展示，支持排序
+- 🎨 **美观界面**: 响应式设计，支持多列布局
 
 ## 注意事项
 

@@ -40,14 +40,43 @@ def init_supabase():
     SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY"))
     
     if not SUPABASE_URL or not SUPABASE_KEY:
-        st.error("❌ Supabase 配置未找到，请检查环境变量或 Streamlit secrets")
+        st.error("❌ Supabase 配置未找到")
+        st.info("""
+        请按以下步骤配置 Supabase 连接:
+        
+        1. **配置环境变量** (推荐):
+        ```bash
+        export SUPABASE_URL="your-supabase-url"
+        export SUPABASE_KEY="your-supabase-service-role-key"
+        ```
+        
+        2. **或编辑 .streamlit/secrets.toml** 文件:
+        ```toml
+        SUPABASE_URL = "your-supabase-url"
+        SUPABASE_KEY = "your-supabase-service-role-key"
+        ```
+        
+        3. **获取 Supabase 配置信息**:
+        - 登录 [Supabase.com](https://supabase.com)
+        - 进入您的项目
+        - 在 Settings → API 中找到 URL 和 service_role key
+        """)
         st.stop()
     
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        # 测试连接
+        supabase.table('stocks').select('update_date').limit(1).execute()
         return supabase
     except Exception as e:
         st.error(f"❌ Supabase 连接失败: {e}")
+        st.warning("""
+        常见问题解决方案:
+        - 检查 API 密钥是否正确 (应使用 service_role key，不是 anon key)
+        - 确认项目 URL 格式正确 (https://your-project.supabase.co)
+        - 检查网络连接是否正常
+        - 验证数据库中是否存在 'stocks' 表
+        """)
         st.stop()
 
 @st.cache_data(ttl=300)  # 缓存5分钟

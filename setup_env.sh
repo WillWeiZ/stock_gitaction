@@ -6,11 +6,11 @@
 echo "🔧 设置 Supabase 环境变量..."
 
 # 请将以下值替换为您的实际 Supabase 配置
-export SUPABASE_URL="your-supabase-project-url-here"
+export SUPABASE_URL="https://jsnrbuzrtvxuysotstyh.supabase.co"
 export SUPABASE_KEY="your-supabase-service-role-key-here"
 
 # 验证环境变量是否设置
-if [ "$SUPABASE_URL" = "your-supabase-project-url-here" ]; then
+if [ "$SUPABASE_KEY" = "your-supabase-service-role-key-here" ]; then
     echo "⚠️  请编辑此脚本，替换为您的实际 Supabase 配置！"
     echo ""
     echo "📋 获取配置步骤:"

@@ -11,9 +11,9 @@ def test_supabase_connection():
     """测试 Supabase 连接"""
     print("🔌 测试 Supabase 连接...")
     
-    # 从环境变量或 secrets 文件获取配置
+    # 从环境变量获取配置
     SUPABASE_URL = os.getenv("SUPABASE_URL", "https://jsnrbuzrtvxuysotstyh.supabase.co")
-    SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbnJidXpydHZ4dXlzb3RzdHloIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Njg3NDYwMiwiZXhwIjoyMDcyNDUwNjAyfQ.8JK7uZuFRGEkM7Hd1aZdHyUXQ4PqJJ9V7ZHk5xBRLZ4")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
     
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)

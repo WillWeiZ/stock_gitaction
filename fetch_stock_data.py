@@ -102,33 +102,33 @@ def insert_stock_data(df, update_date):
             if not stock_name:
                 continue
             
-            # 映射其他字段
+            # 映射其他字段 - 使用模糊匹配来处理包含日期的字段名
             data_row = {
                 'code': stock_code,
                 'stock_name': stock_name,
                 'latest_price': get_value(row, df.columns, ['最新价', '现价', 'price']),
                 'latest_change_pct': get_value(row, df.columns, ['最新涨跌幅', '涨跌幅', '涨跌幅(%)']),
                 'listing_board': get_value(row, df.columns, ['上市板块', '板块']),
-                'auction_change_pct': get_value(row, df.columns, ['竞价涨幅', '竞价涨跌幅']),
-                'pe_ttm': get_value(row, df.columns, ['市盈率(pe,ttm)', 'PE(TTM)', 'pe_ttm']),
-                'pe': get_value(row, df.columns, ['市盈率(pe)', 'PE', 'pe']),
-                'dde_large_order': get_value(row, df.columns, ['dde大单净量', '主力净量', '大单净量']),
-                'volume_ratio': get_value(row, df.columns, ['分时量比', '量比', '集合竞价量比']),
-                'interval_change_13d': get_value(row, df.columns, ['区间涨跌幅:前复权[13日]', '10日涨幅', '13日涨幅']),
-                'interval_change_5d': get_value(row, df.columns, ['区间涨跌幅:前复权[5日]', '5日涨幅']),
-                'listing_days': get_value(row, df.columns, ['上市天数', '上市时间']),
-                'forecast_pe_1y': get_value(row, df.columns, ['预测市盈率(pe,最新预测)[1年]']),
-                'forecast_pe_2y': get_value(row, df.columns, ['预测市盈率(pe,最新预测)[2年]']),
-                'forecast_pe_3y': get_value(row, df.columns, ['预测市盈率(pe,最新预测)[3年]']),
-                'market_cap': get_value(row, df.columns, ['总市值', '市值']),
+                'auction_change_pct': get_value_fuzzy(row, df.columns, ['竞价涨幅']),
+                'pe_ttm': get_value_fuzzy(row, df.columns, ['市盈率(pe,ttm)']),
+                'pe': get_value_fuzzy(row, df.columns, ['市盈率(pe)']),
+                'dde_large_order': get_value_fuzzy(row, df.columns, ['dde大单净量']),
+                'volume_ratio': get_value_fuzzy(row, df.columns, ['分时量比']),
+                'interval_change_13d': get_interval_change(row, df.columns, longer=True),   # 取较长区间
+                'interval_change_5d': get_interval_change(row, df.columns, longer=False),  # 取较短区间
+                'listing_days': get_value_fuzzy(row, df.columns, ['上市天数']),
+                'forecast_pe_1y': get_value_fuzzy(row, df.columns, ['预测市盈率(pe,最新预测)[2025']),
+                'forecast_pe_2y': get_value_fuzzy(row, df.columns, ['预测市盈率(pe,最新预测)[2026']),
+                'forecast_pe_3y': get_value_fuzzy(row, df.columns, ['预测市盈率(pe,最新预测)[2027']),
+                'market_cap': get_value_fuzzy(row, df.columns, ['总市值']),
                 'eps': get_value(row, df.columns, ['基本每股收益', 'EPS']),
                 'gross_margin': get_value(row, df.columns, ['销售毛利率', '毛利率']),
                 'net_margin': get_value(row, df.columns, ['销售净利率', '净利率']),
-                'auction_price': get_value(row, df.columns, ['竞价匹配价', '竞价价格']),
-                'auction_type': get_value(row, df.columns, ['竞价异动类型', '异动类型']),
-                'auction_desc': get_value(row, df.columns, ['竞价异动说明', '异动说明']),
-                'auction_rating': get_value(row, df.columns, ['集合竞价评级', '评级']),
-                'auction_volume': get_value(row, df.columns, ['竞价量', '竞价成交量']),
+                'auction_price': get_value_fuzzy(row, df.columns, ['竞价匹配价']),
+                'auction_type': get_value_fuzzy(row, df.columns, ['竞价异动类型']),
+                'auction_desc': get_value_fuzzy(row, df.columns, ['竞价异动说明']),
+                'auction_rating': get_value_fuzzy(row, df.columns, ['集合竞价评级']),
+                'auction_volume': get_value_fuzzy(row, df.columns, ['竞价量']),
                 'auction_amount': get_value(row, df.columns, ['竞价金额', '竞价成交额']),
                 'market_code': get_value(row, df.columns, ['market_code']),
                 'update_date': update_date
@@ -137,8 +137,15 @@ def insert_stock_data(df, update_date):
             data_to_insert.append(data_row)
         
         if data_to_insert:
+            # 先删除当天的数据，避免重复
+            try:
+                supabase.table('stocks').delete().eq('update_date', update_date).execute()
+                print(f"🗑️ 已清理当天的旧数据")
+            except Exception as e:
+                print(f"⚠️ 清理旧数据时出现警告: {e}")
+            
             # 批量插入数据到Supabase
-            result = supabase.table('stocks').upsert(data_to_insert).execute()
+            result = supabase.table('stocks').insert(data_to_insert).execute()
             
             print(f"✅ 成功插入 {len(data_to_insert)} 条股票数据到Supabase数据库")
             return len(data_to_insert)
@@ -155,6 +162,31 @@ def get_value(row, columns, possible_names, default=None):
     for name in possible_names:
         if name in columns and pd.notna(row[name]):
             return row[name]
+    return default
+
+def get_value_fuzzy(row, columns, possible_names, default=None):
+    """使用模糊匹配从行数据中获取值"""
+    for pattern in possible_names:
+        for col in columns:
+            if pattern in col and pd.notna(row[col]):
+                return row[col]
+    return default
+
+def get_interval_change(row, columns, longer=True, default=None):
+    """获取区间涨跌幅，longer=True取较长区间，False取较短区间"""
+    interval_cols = [col for col in columns if '区间涨跌幅:前复权' in col]
+    if not interval_cols:
+        return default
+    
+    if longer:
+        # 取较长区间（日期范围较大的）
+        col = max(interval_cols, key=len, default=None)
+    else:
+        # 取较短区间（日期范围较小的）  
+        col = min(interval_cols, key=len, default=None)
+    
+    if col and pd.notna(row[col]):
+        return row[col]
     return default
 
 def fetch_stock_data():

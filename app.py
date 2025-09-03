@@ -80,10 +80,10 @@ def init_supabase():
         st.stop()
 
 @st.cache_data(ttl=300)  # 缓存5分钟
-def get_available_dates(supabase):
+def get_available_dates(_supabase):
     """获取可用的数据日期"""
     try:
-        response = supabase.table('stocks').select('update_date').execute()
+        response = _supabase.table('stocks').select('update_date').execute()
         dates = [row['update_date'] for row in response.data]
         unique_dates = sorted(list(set(dates)), reverse=True)
         return unique_dates
@@ -92,10 +92,10 @@ def get_available_dates(supabase):
         return []
 
 @st.cache_data(ttl=300)
-def get_stocks_by_date(supabase, selected_date):
+def get_stocks_by_date(_supabase, selected_date):
     """根据日期获取股票数据"""
     try:
-        response = supabase.table('stocks').select('*').eq('update_date', selected_date).execute()
+        response = _supabase.table('stocks').select('*').eq('update_date', selected_date).execute()
         if response.data:
             df = pd.DataFrame(response.data)
             return df

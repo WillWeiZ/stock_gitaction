@@ -177,6 +177,12 @@ def fetch_stock_data():
             if not isinstance(res, pd.DataFrame):
                 res = pd.DataFrame(res)
             
+            # 打印列名用于调试
+            print(f"📋 获取到的数据列名: {list(res.columns)}")
+            print(f"📊 数据行数: {len(res)}")
+            if len(res) > 0:
+                print(f"📝 第一行数据示例: {dict(res.iloc[0])}")
+            
             # 清理股票代码
             for col in ['代码', '股票代码', '证券代码']:
                 if col in res.columns:

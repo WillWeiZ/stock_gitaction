@@ -8,11 +8,12 @@ This is an automated stock data collection system that runs on GitHub Actions. I
 
 ## Architecture
 
-The system consists of three main components:
+The system consists of four main components:
 
 1. **Data Collection (`fetch_stock_data.py`)**: Core Python script that uses `pywencai` library to query TongHuaShun API with specific stock screening criteria
 2. **Database Storage**: Supabase PostgreSQL database with a `stocks` table containing comprehensive stock information
-3. **Automation**: GitHub Actions workflow that runs on weekdays at 9:27 AM Beijing time
+3. **Web Interface (`app.py`)**: Streamlit-based dashboard for data visualization and analysis
+4. **Automation**: GitHub Actions workflow that runs on weekdays at 9:27 AM Beijing time
 
 ## Key Commands
 
@@ -22,6 +23,17 @@ pip install -r requirements.txt
 
 # Run the main script locally (requires environment variables)
 python fetch_stock_data.py
+
+# Start Streamlit web dashboard
+./start_app.sh
+# or manually:
+streamlit run app.py --server.port=8501
+
+# Test database connection
+python test_connection.py
+
+# Setup environment variables (copy and modify)
+cp setup_env.sh my_setup_env.sh
 
 # Test GitHub Actions workflow manually
 gh workflow run "股票数据获取定时任务"
@@ -82,10 +94,24 @@ Common issues:
 - **Duplicate key errors**: The script handles this by deleting existing daily data before insertion
 - **Field mapping failures**: Field names from TongHuaShun API may change, requiring updates to mapping logic
 
+## Web Dashboard
+
+The Streamlit application (`app.py`) provides:
+- Interactive data visualization with charts and metrics
+- Historical stock performance analysis
+- Data filtering and search capabilities
+- Real-time database statistics
+
+Configuration options:
+- Environment variables: `SUPABASE_URL`, `SUPABASE_KEY`
+- Streamlit secrets: `.streamlit/secrets.toml`
+- Custom themes and styling through `.streamlit/config.toml`
+
 ## Testing
 
 Manual testing workflow:
-1. Trigger workflow manually via GitHub Actions UI
-2. Monitor execution logs for data collection success
-3. Verify data insertion in Supabase database
-4. Check DingTalk notifications if configured
+1. **Database connection**: Run `python test_connection.py`
+2. **Data collection**: Run `python fetch_stock_data.py` locally
+3. **Web interface**: Start dashboard with `./start_app.sh`
+4. **GitHub Actions**: Trigger workflow manually via GitHub Actions UI
+5. **Verification**: Monitor logs and check Supabase database
